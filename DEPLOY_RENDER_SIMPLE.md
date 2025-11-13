@@ -56,7 +56,9 @@ git push origin main
 - Root Directory: `backend`
 - Runtime: `Node`
 - Build Command: `npm install`
-- Start Command: `npm start`
+- Start Command: `node server.js`
+
+**⚠️ Lưu ý:** Dùng `node server.js` thay vì `npm start` để tránh lỗi đường dẫn.
 
 **Environment Variables:**
 ```
