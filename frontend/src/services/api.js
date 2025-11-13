@@ -145,6 +145,13 @@ export const usersAPI = {
 
 // Streams API
 export const streamsAPI = {
+    getStreamToken: async (roomId) => {
+        const response = await fetch(`${API_URL}/streams/${roomId}/token`, {
+            headers: getAuthHeaders()
+        });
+        return handleResponse(response);
+    },
+
     getStreamStats: async (roomId) => {
         const response = await fetch(`${API_URL}/streams/${roomId}/stats`);
         return handleResponse(response);

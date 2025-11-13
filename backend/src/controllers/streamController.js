@@ -2,6 +2,104 @@ const Room = require('../models/Room');
 const Message = require('../models/Message');
 const { redis } = require('../config/redis');
 const logger = require('../utils/logger');
+const crypto = require('crypto');
+
+// Generate signed URL for stream access
+exports.getStreamToken = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const userId = req.user.id;
+
+    const room = await Room.findByRoomId(roomId);
+    if (!room) {
+      return res.status(404).json({ error: 'Room not found' });
+    }
+
+    if (!room.is_live) {
+      return res.status(400).json({ error: 'Stream is not live' });
+    }
+
+    // Check if user is banned
+    const db = require('../config/database');
+    const banCheck = await db.query(
+      `SELECT * FROM bans 
+       WHERE room_id = $1 AND user_id = $2 
+       AND (expires_at IS NULL OR expires_at > NOW())`,
+      [room.id, userId]
+    );
+
+    if (banCheck.rows.length > 0) {
+      return res.status(403).json({ error: 'You are banned from this stream' });
+    }
+
+    // Generate signed token
+    const expires = Date.now() + 3600000; // 1 hour
+    const streamSecret = process.env.STREAM_SECRET || process.env.JWT_SECRET;
+    const data = `${room.stream_key}:${userId}:${expires}`;
+    const signature = crypto
+      .createHmac('sha256', streamSecret)
+      .update(data)
+      .digest('hex');
+
+    // Log access for audit
+    await redis.setex(
+      `stream_access:${roomId}:${userId}`,
+      3600,
+      JSON.stringify({
+        timestamp: Date.now(),
+        ip: req.ip,
+        userAgent: req.get('user-agent')
+      })
+    );
+
+    logger.info(`Stream token generated for user ${userId} in room ${roomId}`);
+
+    res.json({
+      success: true,
+      token: signature,
+      expires: expires,
+      streamKey: room.stream_key,
+      url: `${process.env.HLS_BASE_URL || 'http://localhost:8000'}/live/${room.stream_key}.flv`
+    });
+  } catch (error) {
+    logger.error('Get stream token error:', error);
+    next(error);
+  }
+};
+
+// Verify stream token (middleware for RTMP/HLS server)
+exports.verifyStreamToken = async (req, res, next) => {
+  try {
+    const { streamKey, token, expires, userId } = req.query;
+
+    if (!streamKey || !token || !expires || !userId) {
+      return res.status(400).json({ error: 'Missing parameters' });
+    }
+
+    // Check expiration
+    if (Date.now() > parseInt(expires)) {
+      return res.status(410).json({ error: 'Token expired' });
+    }
+
+    // Verify signature
+    const streamSecret = process.env.STREAM_SECRET || process.env.JWT_SECRET;
+    const data = `${streamKey}:${userId}:${expires}`;
+    const expectedSignature = crypto
+      .createHmac('sha256', streamSecret)
+      .update(data)
+      .digest('hex');
+
+    if (token !== expectedSignature) {
+      logger.warn(`Invalid stream token attempt for stream ${streamKey}`);
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
+    res.json({ success: true, valid: true });
+  } catch (error) {
+    logger.error('Verify stream token error:', error);
+    next(error);
+  }
+};
 
 exports.getStreamStats = async (req, res, next) => {
   try {

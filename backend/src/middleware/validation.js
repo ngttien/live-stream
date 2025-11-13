@@ -22,9 +22,30 @@ const validate = (schema) => {
 
 // Schemas
 const registerSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  username: Joi.string()
+    .alphanum()
+    .min(3)
+    .max(30)
+    .required()
+    .messages({
+      'string.alphanum': 'Username must only contain alphanumeric characters',
+      'string.min': 'Username must be at least 3 characters',
+      'string.max': 'Username must not exceed 30 characters'
+    }),
+  email: Joi.string()
+    .email()
+    .required()
+    .messages({
+      'string.email': 'Please provide a valid email address'
+    }),
+  password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 8 characters',
+      'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    })
 });
 
 const loginSchema = Joi.object({

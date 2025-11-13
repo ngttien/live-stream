@@ -212,3 +212,86 @@ FROM users u
 LEFT JOIN rooms r ON u.id = r.streamer_id
 GROUP BY u.id
 ORDER BY u.follower_count DESC;
+-- ====
+=========================================
+-- Audit Logs table (Security & Compliance)
+-- =============================================
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id          SERIAL PRIMARY KEY,
+    event_type  VARCHAR(50) NOT NULL,
+    room_id     INTEGER REFERENCES rooms(id) ON DELETE SET NULL,
+    user_id     INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    ip_address  VARCHAR(45),
+    user_agent  TEXT,
+    details     JSONB,
+    created_at  TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_audit_logs_event_type  ON audit_logs(event_type);
+CREATE INDEX idx_audit_logs_room_id     ON audit_logs(room_id);
+CREATE INDEX idx_audit_logs_user_id     ON audit_logs(user_id);
+CREATE INDEX idx_audit_logs_ip_address  ON audit_logs(ip_address);
+CREATE INDEX idx_audit_logs_created_at  ON audit_logs(created_at DESC);
+
+-- Event types:
+-- 'LOGIN', 'LOGOUT', 'STREAM_START', 'STREAM_END', 'STREAM_ACCESS',
+-- 'IP_BLOCKED', 'RATE_LIMIT_EXCEEDED', 'UNAUTHORIZED_ACCESS',
+-- 'BAN_USER', 'UNBAN_USER', 'DELETE_MESSAGE', 'SECURITY_VIOLATION'
+
+-- =============================================
+-- Stream Access Tokens table
+-- =============================================
+CREATE TABLE IF NOT EXISTS stream_tokens (
+    id          SERIAL PRIMARY KEY,
+    room_id     INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
+    user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    token_hash  VARCHAR(64) NOT NULL,
+    ip_address  VARCHAR(45),
+    expires_at  TIMESTAMP NOT NULL,
+    revoked     BOOLEAN DEFAULT FALSE,
+    created_at  TIMESTAMP DEFAULT NOW(),
+    UNIQUE(token_hash)
+);
+
+CREATE INDEX idx_stream_tokens_room_id    ON stream_tokens(room_id);
+CREATE INDEX idx_stream_tokens_user_id    ON stream_tokens(user_id);
+CREATE INDEX idx_stream_tokens_expires_at ON stream_tokens(expires_at);
+CREATE INDEX idx_stream_tokens_revoked    ON stream_tokens(revoked);
+
+-- =============================================
+-- IP Whitelist table
+-- =============================================
+CREATE TABLE IF NOT EXISTS ip_whitelist (
+    id          SERIAL PRIMARY KEY,
+    room_id     INTEGER REFERENCES rooms(id) ON DELETE CASCADE,
+    ip_address  VARCHAR(45) NOT NULL,
+    description VARCHAR(200),
+    created_by  INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at  TIMESTAMP DEFAULT NOW(),
+    UNIQUE(room_id, ip_address)
+);
+
+CREATE INDEX idx_ip_whitelist_room_id    ON ip_whitelist(room_id);
+CREATE INDEX idx_ip_whitelist_ip_address ON ip_whitelist(ip_address);
+
+-- =============================================
+-- Function: Clean old audit logs (keep 90 days)
+-- =============================================
+CREATE OR REPLACE FUNCTION clean_old_audit_logs()
+RETURNS void AS $
+BEGIN
+    DELETE FROM audit_logs
+    WHERE created_at < NOW() - INTERVAL '90 days';
+END;
+$ LANGUAGE plpgsql;
+
+-- =============================================
+-- Function: Clean expired stream tokens
+-- =============================================
+CREATE OR REPLACE FUNCTION clean_expired_tokens()
+RETURNS void AS $
+BEGIN
+    DELETE FROM stream_tokens
+    WHERE expires_at < NOW() - INTERVAL '1 day';
+END;
+$ LANGUAGE plpgsql;
