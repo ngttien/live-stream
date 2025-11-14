@@ -147,12 +147,12 @@ const StreamerDashboard = () => {
               <div style={{ display: 'flex', gap: '8px' }}>
                 <input
                   type="text"
-                  value="rtmp://13.210.237.197/live"
+                  value="rtmp://13.210.237.197:1935/live"
                   readOnly
                   style={{ flex: 1 }}
                 />
                 <button
-                  onClick={() => copyToClipboard('rtmp://13.210.237.197/live')}
+                  onClick={() => copyToClipboard('rtmp://13.210.237.197:1935/live')}
                   className="btn-secondary"
                   style={{ minWidth: '80px' }}
                 >
@@ -179,7 +179,7 @@ const StreamerDashboard = () => {
                 </button>
               </div>
               <small style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px', display: 'block' }}>
-                ⚠️ <strong>Quan trọng:</strong> Dùng stream key UUID này trong OBS, không phải "live"
+                Dùng URL và Stream key này trong OBS để live
               </small>
             </div>
           </div>
