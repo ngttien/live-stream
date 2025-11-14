@@ -34,6 +34,10 @@ services:
         value: 5242880
       - key: LOG_LEVEL
         value: info
+      - key: HLS_BASE_URL
+        value: http://13.210.237.197:8000
+      - key: RTMP_SERVER_URL
+        value: rtmp://13.210.237.197/live
     healthCheckPath: /api/health
 
   # Frontend Static Site
@@ -50,8 +54,8 @@ services:
         value: https://livestream-backend.onrender.com/api
       - key: REACT_APP_SOCKET_URL
         value: https://livestream-backend.onrender.com
-      - key: REACT_APP_HLS_BASE_URL
-        value: http://localhost:8000
+      - key: REACT_APP_FLV_BASE_URL
+        value: http://13.210.237.197:8000
     routes:
       - type: rewrite
         source: /*
