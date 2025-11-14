@@ -1,29 +1,27 @@
 # Dependencies
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-package-lock.json
-yarn.lock
+*/node_modules/
 
 # Environment variables
 .env
 .env.local
-.env.development
-.env.test
-.env.production
-backend/.env
-frontend/.env
-rtmp-server/.env
+.env.*.local
+!.env.example
 
 # Logs
 logs/
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+backend/logs/
 
-# Build output
+# Build outputs
 dist/
 build/
-frontend/build/
+*/build/
+*/dist/
 
 # IDE
 .vscode/
@@ -31,40 +29,25 @@ frontend/build/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Database
-*.sqlite
-*.sqlite3
-*.db
-
-# Uploads & Media
-uploads/
-media/
-public/uploads/
-
-# SSL certificates
-*.pem
-*.key
-*.crt
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Coverage
+# Testing
 coverage/
 .nyc_output/
 
-# Documentation (optional - uncomment if you don't want to commit)
-# screenshots/
-# docs/
+# Temporary files
+*.tmp
+*.temp
+.cache/
 
-# Backup files
-*.bak
-*.backup
-*~
+# OS
+Thumbs.db
+.DS_Store
+
+# Database
+*.sqlite
+*.db
+
+# Scripts tạm thời
+**/clear-*.js
+**/create-*.js

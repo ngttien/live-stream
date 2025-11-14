@@ -4,8 +4,8 @@ const { redis } = require('../config/redis');
 // General API rate limiter
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per window
-  message: 'Too many requests, please try again later',
+  max: 300, // 300 requests per window (tăng từ 100)
+  message: 'Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 15 phút.',
   standardHeaders: true,
   legacyHeaders: false,
 });
@@ -13,16 +13,16 @@ const apiLimiter = rateLimit({
 // Auth rate limiter (stricter)
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5, // 5 attempts per 15 minutes
-  message: 'Too many login attempts, please try again later',
+  max: 10, // 10 attempts per 15 minutes (tăng từ 5)
+  message: 'Bạn đã thử đăng nhập quá nhiều lần. Vui lòng thử lại sau 15 phút.',
   skipSuccessfulRequests: true
 });
 
 // Create room rate limiter
 const createRoomLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // 5 rooms per hour
-  message: 'Too many rooms created, please try again later'
+  max: 10, // 10 rooms per hour (tăng từ 5)
+  message: 'Bạn đã tạo quá nhiều phòng stream. Vui lòng thử lại sau 1 giờ.'
 });
 
 // Custom Redis-based rate limiter
@@ -40,8 +40,9 @@ const redisRateLimit = (keyPrefix, maxRequests, windowSeconds) => {
 
       if (current > maxRequests) {
         const ttl = await redis.ttl(key);
+        const minutes = Math.ceil(ttl / 60);
         return res.status(429).json({
-          error: 'Rate limit exceeded',
+          error: `Bạn đã vượt quá giới hạn yêu cầu. Vui lòng thử lại sau ${minutes} phút.`,
           retryAfter: ttl
         });
       }

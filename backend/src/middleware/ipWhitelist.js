@@ -95,21 +95,7 @@ exports.rateLimitByIP = (maxRequests = 100, windowMs = 60000) => {
  */
 async function logSecurityEvent(event) {
     try {
-        const db = require('../config/database');
-
-        await db.query(
-            `INSERT INTO audit_logs (event_type, room_id, user_id, ip_address, details, created_at)
-       VALUES ($1, $2, $3, $4, $5, NOW())`,
-            [
-                event.type,
-                event.roomId || null,
-                event.userId || null,
-                event.ip,
-                JSON.stringify(event.details)
-            ]
-        );
-
-        // Also keep in Redis for quick access (last 1000 events)
+        // Log to Redis only (skip database if audit_logs table doesn't exist)
         const logKey = 'security_events';
         await redis.lpush(logKey, JSON.stringify({
             ...event,
@@ -118,6 +104,27 @@ async function logSecurityEvent(event) {
         await redis.ltrim(logKey, 0, 999);
 
         logger.info(`Security event logged: ${event.type}`);
+
+        // Try to log to database, but don't fail if table doesn't exist
+        try {
+            const db = require('../config/database');
+            await db.query(
+                `INSERT INTO audit_logs (event_type, room_id, user_id, ip_address, details, created_at)
+           VALUES ($1, $2, $3, $4, $5, NOW())`,
+                [
+                    event.type,
+                    event.roomId || null,
+                    event.userId || null,
+                    event.ip,
+                    JSON.stringify(event.details)
+                ]
+            );
+        } catch (dbError) {
+            // Silently ignore if audit_logs table doesn't exist
+            if (dbError.code !== '42P01') {
+                logger.error('Database audit log error:', dbError.message);
+            }
+        }
     } catch (error) {
         logger.error('Failed to log security event:', error);
     }

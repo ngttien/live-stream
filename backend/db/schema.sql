@@ -212,8 +212,8 @@ FROM users u
 LEFT JOIN rooms r ON u.id = r.streamer_id
 GROUP BY u.id
 ORDER BY u.follower_count DESC;
--- ====
-=========================================
+
+-- =============================================
 -- Audit Logs table (Security & Compliance)
 -- =============================================
 CREATE TABLE IF NOT EXISTS audit_logs (

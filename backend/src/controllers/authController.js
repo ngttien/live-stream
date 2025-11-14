@@ -21,12 +21,12 @@ exports.register = async (req, res, next) => {
     // Check if user exists
     const existingUser = await User.findByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'Email này đã được đăng ký. Vui lòng sử dụng email khác.' });
     }
 
     const existingUsername = await User.findByUsername(username);
     if (existingUsername) {
-      return res.status(400).json({ error: 'Username already taken' });
+      return res.status(400).json({ error: 'Tên người dùng đã tồn tại. Vui lòng chọn tên khác.' });
     }
 
     // Create user
@@ -37,7 +37,7 @@ exports.register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: 'Đăng ký tài khoản thành công!',
       token,
       user: {
         id: user.id,
@@ -60,13 +60,13 @@ exports.login = async (req, res, next) => {
     // Find user
     const user = await User.findByEmail(email);
     if (!user) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.' });
     }
 
     // Verify password
     const isValid = await User.verifyPassword(password, user.password_hash);
     if (!isValid) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Email hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.' });
     }
 
     // Update last login
@@ -79,7 +79,7 @@ exports.login = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Login successful',
+      message: 'Đăng nhập thành công!',
       token,
       user: {
         id: user.id,
@@ -103,7 +103,7 @@ exports.getProfile = async (req, res, next) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
     }
 
     // Get user stats
@@ -136,7 +136,7 @@ exports.updateProfile = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Profile updated successfully',
+      message: 'Cập nhật thông tin cá nhân thành công!',
       user: updatedUser
     });
   } catch (error) {
@@ -150,7 +150,7 @@ exports.refreshToken = async (req, res, next) => {
     const user = await User.findById(req.user.id);
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'Không tìm thấy người dùng.' });
     }
 
     const newToken = generateToken(user);
@@ -175,7 +175,7 @@ exports.changePassword = async (req, res, next) => {
     // Verify current password
     const isValid = await User.verifyPassword(currentPassword, user.password_hash);
     if (!isValid) {
-      return res.status(401).json({ error: 'Current password is incorrect' });
+      return res.status(401).json({ error: 'Mật khẩu hiện tại không đúng. Vui lòng thử lại.' });
     }
 
     // Update password
@@ -191,7 +191,7 @@ exports.changePassword = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Password changed successfully'
+      message: 'Đổi mật khẩu thành công!'
     });
   } catch (error) {
     logger.error('Change password error:', error);
