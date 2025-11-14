@@ -23,15 +23,6 @@ const StreamerDashboard = () => {
     });
   };
 
-  useEffect(() => {
-    if (user?.streamKey) {
-      setStreamKey(user.streamKey);
-    }
-
-    // Load existing rooms
-    loadMyRooms();
-  }, [loadMyRooms, user]);
-
   const loadMyRooms = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -54,6 +45,14 @@ const StreamerDashboard = () => {
       console.error('Load rooms error:', err);
     }
   };
+
+  useEffect(() => {
+    if (user?.streamKey) {
+      setStreamKey(user.streamKey);
+    }
+    loadMyRooms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const createRoom = async () => {
     if (!title.trim()) {
