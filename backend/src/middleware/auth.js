@@ -6,7 +6,7 @@ const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
+      return res.status(401).json({ error: 'Vui lòng đăng nhập để tiếp tục.' });
     }
 
     const token = authHeader.split(' ')[1];
@@ -17,13 +17,13 @@ const authMiddleware = (req, res, next) => {
       next();
     } catch (error) {
       if (error.name === 'TokenExpiredError') {
-        return res.status(401).json({ error: 'Token expired' });
+        return res.status(401).json({ error: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' });
       }
-      return res.status(401).json({ error: 'Invalid token' });
+      return res.status(401).json({ error: 'Token không hợp lệ. Vui lòng đăng nhập lại.' });
     }
   } catch (error) {
     logger.error('Auth middleware error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ error: 'Đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.' });
   }
 };
 

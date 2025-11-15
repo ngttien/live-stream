@@ -22,10 +22,26 @@ if (missingEnvVars.length > 0) {
 const app = express()
 const server = http.createServer(app)
 
+// Force HTTPS in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      res.redirect(`https://${req.header('host')}${req.url}`)
+    } else {
+      next()
+    }
+  })
+}
+
 // Security Middleware
 app.use(helmet({
   contentSecurityPolicy: false,
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
 }))
 
 // CORS Configuration
@@ -93,6 +109,7 @@ app.use('/api/auth', require('./src/routes/auth'))
 app.use('/api/rooms', require('./src/routes/rooms'))
 app.use('/api/users', require('./src/routes/users'))
 app.use('/api/streams', require('./src/routes/streams'))
+app.use('/api/stream-proxy', require('./src/routes/streamProxy'))
 
 // 404 Handler
 app.use((req, res) => {

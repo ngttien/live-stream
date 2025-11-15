@@ -29,11 +29,15 @@ services:
       - key: RATE_LIMIT_WINDOW_MS
         value: 900000
       - key: RATE_LIMIT_MAX_REQUESTS
-        value: 100
+        value: 300
       - key: MAX_FILE_SIZE
         value: 5242880
       - key: LOG_LEVEL
         value: info
+      - key: HLS_BASE_URL
+        value: http://13.210.237.197:8000
+      - key: RTMP_SERVER_URL
+        value: rtmp://13.210.237.197/live
     healthCheckPath: /api/health
 
   # Frontend Static Site
@@ -50,8 +54,6 @@ services:
         value: https://livestream-backend.onrender.com/api
       - key: REACT_APP_SOCKET_URL
         value: https://livestream-backend.onrender.com
-      - key: REACT_APP_HLS_BASE_URL
-        value: http://localhost:8000
     routes:
       - type: rewrite
         source: /*

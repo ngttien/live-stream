@@ -13,7 +13,7 @@ exports.createRoom = async (req, res, next) => {
     const hasActiveRoom = activeRooms.some(room => room.is_live);
 
     if (hasActiveRoom) {
-      return res.status(400).json({ error: 'You already have an active stream' });
+      return res.status(400).json({ error: 'Bạn đã có một phòng stream đang hoạt động. Vui lòng kết thúc stream hiện tại trước khi tạo mới.' });
     }
 
     // Create room
@@ -42,7 +42,7 @@ exports.createRoom = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Room created successfully',
+      message: 'Tạo phòng stream thành công!',
       room
     });
   } catch (error) {
@@ -58,7 +58,7 @@ exports.getRoom = async (req, res, next) => {
     const room = await Room.findByRoomId(roomId);
 
     if (!room) {
-      return res.status(404).json({ error: 'Room not found' });
+      return res.status(404).json({ error: 'Không tìm thấy phòng stream này.' });
     }
 
     // Get room statistics
@@ -124,11 +124,11 @@ exports.updateRoom = async (req, res, next) => {
     // Verify ownership
     const room = await Room.findByRoomId(roomId);
     if (!room) {
-      return res.status(404).json({ error: 'Room not found' });
+      return res.status(404).json({ error: 'Không tìm thấy phòng stream này.' });
     }
 
     if (room.streamer_id !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to update this room' });
+      return res.status(403).json({ error: 'Bạn không có quyền chỉnh sửa phòng stream này.' });
     }
 
     // Update room
@@ -152,7 +152,7 @@ exports.updateRoom = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Room updated successfully',
+      message: 'Cập nhật phòng stream thành công!',
       room: updatedRoom
     });
   } catch (error) {
@@ -168,11 +168,11 @@ exports.endRoom = async (req, res, next) => {
     // Verify ownership
     const room = await Room.findByRoomId(roomId);
     if (!room) {
-      return res.status(404).json({ error: 'Room not found' });
+      return res.status(404).json({ error: 'Không tìm thấy phòng stream này.' });
     }
 
     if (room.streamer_id !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to end this room' });
+      return res.status(403).json({ error: 'Bạn không có quyền kết thúc phòng stream này.' });
     }
 
     // End stream
@@ -188,7 +188,7 @@ exports.endRoom = async (req, res, next) => {
 
     res.json({
       success: true,
-      message: 'Stream ended successfully'
+      message: 'Kết thúc stream thành công!'
     });
   } catch (error) {
     logger.error('End room error:', error);
@@ -201,7 +201,7 @@ exports.searchRooms = async (req, res, next) => {
     const { q, limit = 20 } = req.query;
 
     if (!q || q.trim() === '') {
-      return res.status(400).json({ error: 'Search query is required' });
+      return res.status(400).json({ error: 'Vui lòng nhập từ khóa tìm kiếm.' });
     }
 
     const rooms = await Room.search(q, parseInt(limit));

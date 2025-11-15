@@ -3,19 +3,25 @@
 ## 🔧 Cài đặt & Cấu hình
 
 ### Q: Làm sao để cài đặt PostgreSQL?
-**A:** 
+
+**A:**
+
 - **Windows:** Download từ postgresql.org
 - **Mac:** `brew install postgresql`
 - **Linux:** `sudo apt-get install postgresql`
 
 ### Q: Làm sao để cài đặt Redis?
+
 **A:**
+
 - **Windows:** Download từ github.com/microsoftarchive/redis
 - **Mac:** `brew install redis`
 - **Linux:** `sudo apt-get install redis-server`
 
 ### Q: Port 3000 hoặc 3001 đã được sử dụng?
+
 **A:**
+
 ```bash
 # Tìm process đang dùng port
 lsof -i :3000  # Mac/Linux
@@ -27,7 +33,9 @@ taskkill /PID <PID> /F  # Windows
 ```
 
 ### Q: Làm sao để thay đổi port?
+
 **A:**
+
 - **Backend:** Sửa `PORT` trong `backend/.env`
 - **Frontend:** Sửa trong `package.json` script: `"start": "PORT=3002 react-scripts start"`
 
@@ -36,19 +44,26 @@ taskkill /PID <PID> /F  # Windows
 ## 🔐 Authentication
 
 ### Q: Tại sao phải dùng email thay vì username để login?
+
 **A:** Backend API được thiết kế sử dụng email làm unique identifier cho authentication. Email đảm bảo tính duy nhất tốt hơn username.
 
 ### Q: Token hết hạn sau bao lâu?
+
 **A:** Mặc định là 7 ngày (cấu hình trong `JWT_EXPIRE` ở backend/.env)
 
 ### Q: Làm sao để đổi mật khẩu?
+
 **A:** Hiện tại chưa có UI, nhưng có API endpoint:
+
 ```javascript
-PUT /api/auth/password
-Body: { currentPassword, newPassword }
+PUT / api / auth / password;
+Body: {
+  currentPassword, newPassword;
+}
 ```
 
 ### Q: Quên mật khẩu thì làm sao?
+
 **A:** Tính năng reset password chưa được implement. Có thể reset trực tiếp trong database hoặc tạo tài khoản mới.
 
 ---
@@ -56,16 +71,20 @@ Body: { currentPassword, newPassword }
 ## 🎥 Streaming
 
 ### Q: Tại sao video không phát?
+
 **A:** Kiểm tra:
+
 1. ✅ OBS đã start streaming chưa?
 2. ✅ Stream key đúng chưa?
 3. ✅ RTMP server đang chạy chưa?
 4. ✅ Room đã được tạo chưa?
 
 ### Q: Làm sao để setup RTMP server?
+
 **A:** Có 2 options:
 
 **Option 1: nginx-rtmp**
+
 ```bash
 # Install nginx with rtmp module
 # Config file:
@@ -82,19 +101,24 @@ rtmp {
 ```
 
 **Option 2: node-media-server**
+
 ```bash
 npm install node-media-server
 # Tạo file server.js và config
 ```
 
 ### Q: Video bị lag hoặc buffer?
+
 **A:**
+
 - Giảm bitrate trong OBS (2500-3500 kbps)
 - Kiểm tra internet connection
 - HLS có độ trễ tự nhiên 5-10 giây
 
 ### Q: Làm sao để giảm độ trễ?
+
 **A:**
+
 - Sử dụng WebRTC thay vì HLS (cần implement thêm)
 - Giảm HLS segment duration
 - Sử dụng Low Latency HLS (LL-HLS)
@@ -104,22 +128,28 @@ npm install node-media-server
 ## 💬 Chat
 
 ### Q: Chat không hoạt động?
+
 **A:** Kiểm tra:
+
 1. ✅ Đã đăng nhập chưa?
 2. ✅ Socket.io connected chưa? (xem console log)
 3. ✅ Backend đang chạy chưa?
 4. ✅ Token còn hạn chưa?
 
 ### Q: Tin nhắn không gửi được?
+
 **A:** Có thể bị rate limit (5 tin nhắn / 10 giây). Đợi một chút rồi thử lại.
 
 ### Q: Làm sao để ban user?
+
 **A:** Tính năng ban đã có API nhưng chưa có UI:
+
 ```javascript
 POST /api/streams/:roomId/ban/:userId
 ```
 
 ### Q: Chat history lưu bao lâu?
+
 **A:** Messages được lưu trong database. Có cleanup job xóa messages cũ hơn 7 ngày.
 
 ---
@@ -127,7 +157,9 @@ POST /api/streams/:roomId/ban/:userId
 ## 🐛 Lỗi thường gặp
 
 ### Q: "Database connection failed"
+
 **A:**
+
 ```bash
 # Kiểm tra PostgreSQL đang chạy
 pg_isready
@@ -142,7 +174,9 @@ createdb livestream_app
 ```
 
 ### Q: "Redis connection failed"
+
 **A:**
+
 ```bash
 # Kiểm tra Redis đang chạy
 redis-cli ping
@@ -153,22 +187,36 @@ redis-server
 # Kiểm tra REDIS_URL trong .env
 ```
 
-### Q: "JWT malformed" hoặc "Invalid token"
+### Q: "JWT malformed", "Invalid token" hoặc "Phiên đăng nhập đã hết hạn"
+
 **A:**
+
 ```javascript
 // Xóa token cũ
-localStorage.clear()
+localStorage.clear();
 // Đăng nhập lại
 ```
 
+Lỗi này xảy ra khi:
+
+- Token đã hết hạn (mặc định 7 ngày)
+- Token không hợp lệ
+- Đã đăng xuất nhưng vẫn còn token cũ
+
+**Giải pháp:** Xóa localStorage và đăng nhập lại.
+
 ### Q: "CORS error"
+
 **A:**
+
 - Kiểm tra `CLIENT_URL` trong backend/.env
 - Phải là `http://localhost:3001` (không có trailing slash)
 - Restart backend sau khi đổi
 
 ### Q: "Cannot find module"
+
 **A:**
+
 ```bash
 # Xóa node_modules và reinstall
 rm -rf node_modules package-lock.json
@@ -180,7 +228,9 @@ npm install
 ## 📱 UI/UX
 
 ### Q: Làm sao để thay đổi theme/màu sắc?
+
 **A:** Sửa CSS variables trong `frontend/src/assets/style.css`:
+
 ```css
 :root {
   --yt-bg: #0f0f0f;
@@ -191,10 +241,20 @@ npm install
 ```
 
 ### Q: Responsive trên mobile chưa?
-**A:** Đã có basic responsive nhưng chưa optimize hoàn toàn. Có thể cải thiện thêm.
+
+**A:** Đã optimize cho mobile với breakpoints:
+
+- 📱 Small mobile (≤375px): Compact layout
+- 📱 Mobile (≤640px): Full-width components
+- 📱 Tablet (≤768px): Adaptive sizing
+- 💻 Desktop (>768px): Full features
+
+Toast notifications, chat, và UI components đã được tối ưu cho màn hình nhỏ.
 
 ### Q: Làm sao để thêm emoji vào chat?
+
 **A:** Hiện tại chưa có emoji picker. Có thể:
+
 1. Copy/paste emoji từ bàn phím
 2. Implement emoji picker library (emoji-mart)
 
@@ -203,14 +263,18 @@ npm install
 ## 🔍 Development
 
 ### Q: Làm sao để debug?
+
 **A:**
+
 - **Frontend:** Browser DevTools (F12) → Console & Network tabs
 - **Backend:** Check terminal logs
 - **Database:** `psql -U postgres -d livestream_app`
 - **Redis:** `redis-cli monitor`
 
 ### Q: Làm sao để test API?
+
 **A:**
+
 ```bash
 # Sử dụng curl
 curl -X POST http://localhost:3000/api/auth/login \
@@ -221,7 +285,9 @@ curl -X POST http://localhost:3000/api/auth/login \
 ```
 
 ### Q: Làm sao để xem database?
+
 **A:**
+
 ```bash
 # psql
 psql -U postgres -d livestream_app
@@ -236,7 +302,9 @@ SELECT * FROM users;
 ```
 
 ### Q: Làm sao để reset database?
+
 **A:**
+
 ```bash
 # Drop và tạo lại
 dropdb livestream_app
@@ -253,7 +321,9 @@ npm run seed  # optional
 ## 🚀 Deployment
 
 ### Q: Làm sao để deploy lên production?
+
 **A:**
+
 1. Build frontend: `npm run build`
 2. Setup production database
 3. Setup production Redis
@@ -263,7 +333,9 @@ npm run seed  # optional
 7. Enable HTTPS
 
 ### Q: Cần thay đổi gì cho production?
+
 **A:**
+
 - Đổi `JWT_SECRET` thành random string mạnh
 - Đổi `NODE_ENV=production`
 - Setup proper CORS
@@ -273,7 +345,9 @@ npm run seed  # optional
 - Setup monitoring (PM2, New Relic)
 
 ### Q: Làm sao để scale?
+
 **A:**
+
 - Horizontal: Multiple app instances + Load balancer
 - Redis cluster cho shared state
 - PostgreSQL replication
@@ -285,7 +359,9 @@ npm run seed  # optional
 ## 📊 Performance
 
 ### Q: Làm sao để tăng performance?
+
 **A:**
+
 - Enable Redis caching
 - Optimize database queries (indexes)
 - Use CDN
@@ -294,7 +370,9 @@ npm run seed  # optional
 - Optimize images
 
 ### Q: Bao nhiêu concurrent users có thể handle?
+
 **A:** Phụ thuộc vào:
+
 - Server resources
 - Database connections
 - Redis capacity
@@ -302,12 +380,20 @@ npm run seed  # optional
 
 Với setup mặc định: ~100-500 concurrent users
 
+**Rate Limits hiện tại:**
+
+- API requests: 300 requests / 15 phút
+- Login attempts: 10 lần / 15 phút
+- Tạo phòng stream: 10 phòng / 1 giờ
+
 ---
 
 ## 🔒 Security
 
 ### Q: Ứng dụng có an toàn không?
+
 **A:** Đã implement:
+
 - ✅ JWT authentication
 - ✅ Password hashing (bcrypt)
 - ✅ Rate limiting
@@ -317,13 +403,16 @@ Với setup mặc định: ~100-500 concurrent users
 - ✅ XSS prevention
 
 Nhưng cần thêm cho production:
+
 - HTTPS
 - CSRF protection
 - Security headers
 - Regular security audits
 
 ### Q: Làm sao để bảo vệ stream key?
+
 **A:**
+
 - Không share stream key
 - Regenerate nếu bị lộ
 - Chỉ hiển thị cho owner
@@ -334,15 +423,19 @@ Nhưng cần thêm cho production:
 ## 📚 Learning Resources
 
 ### Q: Tài liệu về Socket.io?
+
 **A:** https://socket.io/docs/
 
 ### Q: Tài liệu về HLS?
+
 **A:** https://developer.apple.com/streaming/
 
 ### Q: Tài liệu về React?
+
 **A:** https://react.dev/
 
 ### Q: Tài liệu về Express?
+
 **A:** https://expressjs.com/
 
 ---
@@ -350,12 +443,15 @@ Nhưng cần thêm cho production:
 ## 💡 Tips & Tricks
 
 ### Tip 1: Sử dụng React DevTools
+
 Install extension để debug React components
 
 ### Tip 2: Sử dụng Redux DevTools
+
 Nếu thêm Redux, dùng DevTools để track state
 
 ### Tip 3: Monitor logs
+
 ```bash
 # Backend logs
 tail -f backend/logs/app.log
@@ -365,6 +461,7 @@ Browser Console (F12)
 ```
 
 ### Tip 4: Database backup
+
 ```bash
 # Backup
 pg_dump -U postgres livestream_app > backup.sql
@@ -374,6 +471,7 @@ psql -U postgres livestream_app < backup.sql
 ```
 
 ### Tip 5: Test với nhiều browsers
+
 Test trên Chrome, Firefox, Safari để đảm bảo compatibility
 
 ---

@@ -1,6 +1,7 @@
 const Message = require('../../models/Message');
 const { redis } = require('../../config/redis');
 const logger = require('../../utils/logger');
+const sanitizeHtml = require('sanitize-html');
 
 // Bad words filter (simple implementation)
 const BAD_WORDS = ['badword1', 'badword2']; // Add your list
@@ -12,6 +13,15 @@ const filterBadWords = (text) => {
     filtered = filtered.replace(regex, '***');
   });
   return filtered;
+};
+
+// Sanitize user input to prevent XSS
+const sanitizeMessage = (text) => {
+  return sanitizeHtml(text, {
+    allowedTags: [], // No HTML tags allowed
+    allowedAttributes: {},
+    disallowedTagsMode: 'escape'
+  });
 };
 
 module.exports = (socket, io, rooms) => {
@@ -56,22 +66,23 @@ module.exports = (socket, io, rooms) => {
         });
       }
 
-      // Filter bad words
-      const filteredMessage = filterBadWords(message.trim());
+      // Sanitize and filter message
+      let cleanMessage = sanitizeMessage(message.trim());
+      cleanMessage = filterBadWords(cleanMessage);
 
       // Save to database
       const savedMessage = await Message.create({
         roomId: room.id,
         userId: socket.userId,
         username: socket.username,
-        content: filteredMessage
+        content: cleanMessage
       });
 
       const chatMessage = {
         id: savedMessage.id,
         userId: socket.userId,
         username: socket.username,
-        message: filteredMessage,
+        message: cleanMessage,
         timestamp: savedMessage.created_at
       };
 

@@ -12,17 +12,16 @@ const StreamerDashboard = () => {
   const [category, setCategory] = useState('gaming');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const API_URL = process.env.REACT_APP_API_URL;
 
-  useEffect(() => {
-    if (user?.streamKey) {
-      setStreamKey(user.streamKey);
-    }
-
-    // Load existing rooms
-    loadMyRooms();
-  }, [user]);
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
 
   const loadMyRooms = async () => {
     try {
@@ -46,6 +45,14 @@ const StreamerDashboard = () => {
       console.error('Load rooms error:', err);
     }
   };
+
+  useEffect(() => {
+    if (user?.streamKey) {
+      setStreamKey(user.streamKey);
+    }
+    loadMyRooms();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const createRoom = async () => {
     if (!title.trim()) {
@@ -83,6 +90,42 @@ const StreamerDashboard = () => {
     }
   };
 
+  const endStream = async () => {
+    if (!window.confirm('Bạn có chắc muốn kết thúc stream?')) {
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/rooms/${roomId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to end stream');
+      }
+
+      setRoomInfo(null);
+      setRoomId('');
+      setTitle('');
+      setDescription('');
+      setCategory('gaming');
+      alert('Stream đã kết thúc!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
 
   return (
@@ -98,22 +141,46 @@ const StreamerDashboard = () => {
           )}
 
           <div className="info-box">
-            <div className="info-box-title">Cấu hình OBS</div>
+            <div className="info-box-title">⚙️ Cấu hình OBS</div>
             <div className="form-group">
               <label className="form-label">RTMP URL</label>
-              <input
-                type="text"
-                value="rtmp://localhost:1935/live"
-                readOnly
-              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value="rtmp://13.210.237.197:1935/live"
+                  readOnly
+                  style={{ flex: 1 }}
+                />
+                <button
+                  onClick={() => copyToClipboard('rtmp://13.210.237.197:1935/live')}
+                  className="btn-secondary"
+                  style={{ minWidth: '80px' }}
+                >
+                  {copied ? '✓' : '📋'}
+                </button>
+              </div>
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label">Stream Key</label>
-              <input
-                type="text"
-                value={streamKey || 'Đang tải...'}
-                readOnly
-              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={streamKey || 'Đang tải...'}
+                  readOnly
+                  style={{ flex: 1, fontFamily: 'monospace', fontSize: '13px' }}
+                />
+                <button
+                  onClick={() => copyToClipboard(streamKey)}
+                  className="btn-secondary"
+                  style={{ minWidth: '80px' }}
+                  disabled={!streamKey}
+                >
+                  {copied ? '✓' : '📋'}
+                </button>
+              </div>
+              <small style={{ color: 'var(--text-secondary)', fontSize: '12px', marginTop: '8px', display: 'block' }}>
+                Dùng URL và Stream key này trong OBS để live
+              </small>
             </div>
           </div>
 
@@ -184,6 +251,19 @@ const StreamerDashboard = () => {
                   <strong>Mô tả:</strong> {roomInfo.description}
                 </div>
               )}
+              <button
+                onClick={endStream}
+                disabled={loading}
+                className="btn-primary"
+                style={{ 
+                  width: '100%', 
+                  marginTop: '16px',
+                  background: 'var(--error)',
+                  borderColor: 'var(--error)'
+                }}
+              >
+                {loading ? 'Đang kết thúc...' : '⏹ Kết thúc stream'}
+              </button>
             </div>
           )}
         </div>
