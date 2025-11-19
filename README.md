@@ -1,12 +1,6 @@
-# 🎥 Streemly - Nền tảng Livestream Hiện Đại
+# 🎥 Streemly - Nền tảng Livestream
 
 > Nền tảng livestream với độ trễ thấp, chat realtime và giao diện đẹp mắt theo phong cách YouTube.
-
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)
-![React](https://img.shields.io/badge/react-18.3.1-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-
 
 ## Tính năng nổi bật
 
@@ -20,75 +14,12 @@
 - **Low Latency** - Độ trễ cực thấp với HTTP-FLV
 - **Responsive** - Hoạt động mượt mà trên mọi thiết bị
 
-
-## Quick Start
-
-### Yêu cầu
-- Node.js >= 18.x
-- PostgreSQL >= 14
-- OBS Studio (để stream)
-
-
-### Stream với OBS
-- **Server:** `rtmp://localhost:1935/live`
-- **Stream Key:** Lấy từ dashboard sau khi đăng nhập
-
-
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
 | [ARCHITECTURE.md](ARCHITECTURE.md)   | Kiến trúc hệ thống |
 | [FAQ.md](FAQ.md)                     | Câu hỏi thường gặp |
-
-
-## Tech Stack
-
-### Frontend
-- **React** 18.3.1 - UI framework
-- **React Router** 6.28.0 - Routing
-- **Socket.io Client** 4.8.1 - Real-time communication
-- **FLV.js** 1.6.2 - Video streaming (độ trễ thấp)
-- **CSS Variables** - Theme system (dark/light)
-
-### Backend
-- **Node.js** 18+ - Runtime
-- **Express** 4.21.2 - Web framework
-- **Socket.io** 4.8.1 - WebSocket server
-- **PostgreSQL** 14+ - Database
-- **JWT** - Authentication
-- **Bcrypt** - Password hashing
-
-### RTMP Server
-- **Node Media Server** 2.6.4 - RTMP/HTTP-FLV server
-- **FFmpeg** - Video transcoding (optional)
-
-
-## API Endpoints
-
-### Authentication
-```http
-POST   /api/auth/register    # Đăng ký (email, username, password)
-POST   /api/auth/login       # Đăng nhập (email, password)
-GET    /api/auth/me          # Lấy thông tin user hiện tại
-```
-
-### Rooms
-```http
-GET    /api/rooms                # Danh sách live rooms
-GET    /api/rooms/search?q=...   # Tìm kiếm rooms
-GET    /api/rooms/my/rooms       # Rooms của user
-POST   /api/rooms                # Tạo room mới
-GET    /api/rooms/:roomId        # Chi tiết room
-PUT    /api/rooms/:roomId        # Cập nhật room
-DELETE /api/rooms/:roomId        # Xóa room
-```
-
-### Health Check
-```http
-GET    /api/health               # Kiểm tra server status
-```
-
 
 ## Hướng dẫn sử dụng
 
@@ -129,19 +60,6 @@ GET    /api/health               # Kiểm tra server status
    - Gửi tin nhắn trong chat box
    - Tương tác với streamer và viewers khác
 
-  
-## Security Features
-
-- ✅ **JWT Authentication** - Secure token-based auth
-- ✅ **Password Hashing** - Bcrypt với salt rounds 10
-- ✅ **CORS Protection** - Whitelist origins
-- ✅ **SQL Injection Prevention** - Parameterized queries
-- ✅ **XSS Prevention** - Input sanitization
-- ✅ **Rate Limiting** - Prevent abuse
-- ✅ **Environment Variables** - Sensitive data protection
-- ✅ **HTTPS Ready** - SSL/TLS support
-
-
 ## Performance
 
 | Metric | Value |
@@ -177,7 +95,7 @@ Nếu project này hữu ích, hãy cho một ⭐ trên GitHub!
 
 <div align="center">
 
-**Made with ❤️ using React, Node.js & Socket.io**
+**1usuzu**
 
 **Version:** 1.0.0 | **Status:** ✅ Production Ready
 
