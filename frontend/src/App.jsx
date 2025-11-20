@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'; // Thêm useLocation
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './hooks/useAuth';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
@@ -10,36 +10,29 @@ import StreamerDashboard from './pages/StreamerDashboard';
 import ViewerPage from './pages/ViewerPage';
 import './assets/style.css';
 
-// --- 1. Import Matomo ---
-import { MatomoProvider, createInstance, useMatomo } from '@datapunt/matomo-tracker-react';
-import { useEffect } from 'react';
+// --- Matomo Imports ---
+import { MatomoProvider, createInstance } from '@datapunt/matomo-tracker-react';
+import MatomoTracker from './components/MatomoTracker';
 
-// --- 2. Cấu hình Matomo (Điền thông tin của bạn vào đây) ---
+// --- Cấu hình Matomo ---
 const instance = createInstance({
-  urlBase: 'https://streair.matomo.cloud/', // <--- Thay URL Matomo của bạn
-  siteId: 1, // <--- Thay Site ID của bạn
+  urlBase: process.env.REACT_APP_MATOMO_URL || 'https://streair.matomo.cloud', // Fallback nếu quên set env
+  siteId: process.env.REACT_APP_MATOMO_SITE_ID || 1,
+  disabled: process.env.NODE_ENV === 'development', // Tắt khi dev để đỡ rác data
+  heartBeat: { 
+    active: true, 
+    seconds: 10 // Đếm thời gian thực (ping mỗi 10s)
+  },
+  linkTracking: false, // Tắt link tracking tự động để handle thủ công cho SPA chuẩn hơn
 });
-
-// --- 3. Component nhỏ để tự động track khi chuyển trang ---
-const PageTracker = () => {
-  const location = useLocation();
-  const { trackPageView } = useMatomo();
-
-  useEffect(() => {
-    trackPageView(); // Gửi tín hiệu "đã xem trang" mỗi khi URL thay đổi
-  }, [location, trackPageView]);
-
-  return null;
-};
 
 function App() {
   return (
-    // --- 4. Bọc ứng dụng bằng MatomoProvider ---
     <MatomoProvider value={instance}>
       <ThemeProvider>
         <AuthProvider>
           <Router>
-            <PageTracker /> {/* <--- Đặt cái này vào trong Router để nó chạy */}
+            <MatomoTracker />
             <div className="App">
               <Navbar />
               <main>
